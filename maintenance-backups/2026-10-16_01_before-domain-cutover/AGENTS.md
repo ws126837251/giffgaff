@@ -3,7 +3,7 @@
 ## 项目概览
 
 - 本仓库是由 Gmeek 生成并通过 GitHub Pages 发布的静态博客。
-- 生产站点：`https://giffgaff.wufeng.de`
+- 生产站点：`https://tutorials.wufeng.de/giffgaff/`
 - 主要配置：`config.json`
 - 自动化工作流：`.github/workflows/Gmeek.yml`
 - 文章的原始内容来自本仓库的 GitHub Issues。
@@ -33,7 +33,8 @@
 - 每个快照必须包含 `manifest.md`，记录创建时间、任务名称、原始文件和恢复方法。
 - `backup/` 是 Gmeek 自动生成的文章备份目录，不得用于保存人工维护快照。
 - `docs/`、`backup/` 和 `blogBase.json` 等生成结果不单独备份；应备份真正修改的源配置、工作流或文章 Issue 内容。
-- 不覆盖、不删除或改写历史快照，除非用户明确要求。
+- 人工维护快照只保留最新 3 个版本；创建新快照后若总数超过 3 个，按目录名排序删除最早的版本，直至只剩 3 个。
+- 除按上述滚动规则清理最早版本外，不覆盖、改写或删除仍在保留期内的快照。
 
 ## 验证要求
 

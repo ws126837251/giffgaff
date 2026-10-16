@@ -85,7 +85,7 @@ jobs:
 
 
           DOCS_DIR = Path("/opt/Gmeek/docs")
-          HOME_URL = "https://tutorials.wufeng.de/giffgaff/"
+          HOME_URL = "https://blog.wufeng.de/giffgaff/"
           DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 
