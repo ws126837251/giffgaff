@@ -91,6 +91,34 @@ jobs:
           DOCS_DIR = Path("/opt/Gmeek/docs")
           HOME_URL = "https://blog.wufeng.de/giffgaff/"
           DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+          VCOUNT_MARKER = "data-wufeng-vcount-canonical"
+          VCOUNT_PATCH = """<script data-wufeng-vcount-canonical>
+          (function(){
+              if(window.__wufengVercountCanonical)return;
+              window.__wufengVercountCanonical=true;
+              var api="https://events.vercount.one/api/v2/log";
+              var legacyHost="tutorials.wufeng.de";
+              var originalFetch=window.fetch;
+              if(typeof originalFetch!=="function")return;
+              window.fetch=function(input,init){
+                  try{
+                      var requestUrl=typeof input==='string'?input:(input&&input.url);
+                      if(requestUrl===api&&init&&typeof init.body==='string'){
+                          var payload=JSON.parse(init.body);
+                          if(payload&&typeof payload.url==='string'){
+                              var target=new URL(payload.url);
+                              if(target.hostname==='blog.wufeng.de'){
+                                  target.hostname=legacyHost;
+                                  payload.url=target.href;
+                                  init=Object.assign({},init,{body:JSON.stringify(payload)});
+                              }
+                          }
+                      }
+                  }catch(error){}
+                  return originalFetch.call(this,input,init);
+              };
+          })();
+          </script>"""
 
 
           def find_date_label(text_node, row):
@@ -305,6 +333,35 @@ jobs:
               print(f"已处理：{tag_file}")
 
 
+          def patch_vercount():
+              html_files = list(DOCS_DIR.rglob("*.html"))
+              if not html_files:
+                  raise FileNotFoundError("docs 中没有可注入统计兼容脚本的 HTML 文件")
+
+              patched = 0
+              for html_file in html_files:
+                  soup = BeautifulSoup(
+                      html_file.read_text(encoding="utf-8"),
+                      "html.parser"
+                  )
+                  if soup.find("script", attrs={VCOUNT_MARKER: True}):
+                      continue
+                  plugin = soup.find(
+                      "script",
+                      src="https://blog.meekdai.com/Gmeek/plugins/GmeekVercount.js",
+                  )
+                  if plugin is None:
+                      raise RuntimeError(f"页面缺少 GmeekVercount.js：{html_file}")
+                  patch_script = BeautifulSoup(
+                      VCOUNT_PATCH,
+                      "html.parser"
+                  ).find("script")
+                  plugin.insert_after(patch_script)
+                  html_file.write_text(str(soup), encoding="utf-8")
+                  patched += 1
+              print(f"已统一 Vercount 统计标识，处理 {patched} 个页面")
+
+
           homepage = DOCS_DIR / "index.html"
 
           if not homepage.exists():
@@ -314,6 +371,7 @@ jobs:
 
           process_homepage(homepage)
           process_tag_page()
+          patch_vercount()
 
           print("CUSTOMIZE_SUCCESS")
           PY
@@ -352,6 +410,18 @@ jobs:
               raise RuntimeError("标签页标题修复未生成")
           if "window.location.href='https://blog.wufeng.de/giffgaff/'" not in tag_html:
               raise RuntimeError("标签页 All 按钮未指向 Giffgaff 首页")
+
+          html_files = list(Path("/opt/Gmeek/docs").rglob("*.html"))
+          missing_vcount = [
+              str(path)
+              for path in html_files
+              if VCOUNT_MARKER not in path.read_text(encoding="utf-8")
+          ]
+          if missing_vcount:
+              raise RuntimeError(
+                  "以下页面缺少 Vercount 兼容脚本："
+                  + ", ".join(missing_vcount[:5])
+              )
 
           rss_links = []
 
