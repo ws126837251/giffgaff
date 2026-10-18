@@ -386,6 +386,7 @@ jobs:
 
 
           index_file = Path("/opt/Gmeek/docs/index.html")
+          VCOUNT_MARKER = "data-wufeng-vcount-canonical"
           html = index_file.read_text(encoding="utf-8")
           soup = BeautifulSoup(html, "html.parser")
 
