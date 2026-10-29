@@ -43,7 +43,7 @@
 
 - 北京时间 12:30 至次日凌晨 4:30。
 
-- 订购一张实体空白卡：[点击购买](https://giffgaff.wufeng.de/post/lian-xi-wo-men-%EF%BC%81.html)
+- 订购一张实体空白卡：[点击购买](https://wufeng.de/)
 
 ### 二、操作
 
